@@ -3,7 +3,7 @@ import { useDeleteContactMutation } from 'redux/contactsApi';
 import { ContactListItemContainer, Button, ContactItem, Contact } from './ContactListItem.styled';
 
 export const ContactListItem = ({id, name, number}) => {
-    const [deleteContact] = useDeleteContactMutation();
+    const [deleteContact, result] = useDeleteContactMutation();
 
     return (
         <ContactListItemContainer>
@@ -11,7 +11,9 @@ export const ContactListItem = ({id, name, number}) => {
                 <Contact>
                     <p>{name}: {number}</p>
                 </Contact>
-            <Button onClick={() => deleteContact(id)}>Delete</Button>  
+            <Button onClick={() => deleteContact(id)}>
+                {result.data ? 'Deleting' : ''}
+                Delete</Button>  
             </ContactItem>  
         </ContactListItemContainer>
     )

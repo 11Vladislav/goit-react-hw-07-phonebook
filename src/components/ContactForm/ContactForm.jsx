@@ -1,45 +1,54 @@
 import { useGetContactsQuery, useAddContactMutation} from 'redux/contactsApi';
+import { useState } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import PropTypes from 'prop-types';
 import {StyledForm, Input, Label, Button} from './ContactForm.styled';
 
 export const ContactForm = () => {
+  const { data: contacts} = useGetContactsQuery();
   const [addContact] = useAddContactMutation();
-  const {data: contacts} = useGetContactsQuery();
-    
-  const handleSubmitForm = e => {
-    e.preventDefault();
-    const name = e.target.elements.name.value;
-    const number = e.target.elements.number.value;
-    const newContact = { name, number};
-    const resetForm = () => e.target.reset();
+  const [name, setName] = useState('');
+  const [number, setNumber] = useState('');
 
-    if(contacts.find (contact => contact.name === name)) {
-      toast.error('Contact already exists.');
-      resetForm();
-      return;
-    } 
-    addContact({newContact});
-    toast.success('Contact added.');
-    resetForm();
+  
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (name === 'name') {
+      setName(value);
+    } else if (name === 'number') {
+      setNumber(value);
     }
+  }
 
-    return (
-           
-                 <StyledForm>
-                <Label htmlFor="name">Name
-                     <Input type="text" name="name" placeholder="Name" onSubmit={handleSubmitForm} />
-                    </Label>
-                 <Label htmlFor="number">Number
-                     <Input type="text" name="number" placeholder="Number" onSubmit={handleSubmitForm} />
-                    </Label>  
-                     <Button type="submit">Add contact</Button>
-                 </StyledForm>
-             )   
-             }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!name || !number) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+    const contact = contacts.find(contact => contact.name === name);
+    if (contact) {
+      toast.error('Contact already exists');
+      return;
+    }
+     await addContact({
+      name, number,
+    });
+    setName('');
+    setNumber('');
+  }
 
-export default ContactForm;
+  return (
+    <StyledForm onSubmit={handleSubmit}>
+      <Label>Name</Label>
+      <Input type="text" name="name" value={name} onChange={handleChange} />
+      <Label>Number</Label>
+      <Input type="text" name="number" value={number} onChange={handleChange} />
+        <Button type="submit">Add contact</Button> 
+    </StyledForm>
+  );
+}
 
  ContactForm.propTypes = {
   name: PropTypes.string,
